@@ -1,0 +1,905 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>NaryGiveaway — DDS Gamepass Giveaway 2026</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Space+Grotesk:wght@400;500;600;700&family=Orbitron:wght@500;700;900&display=swap" rel="stylesheet">
+<script src="https://cdn.tailwindcss.com"></script>
+<style>
+  :root{
+    --bg:#050816; --surface:#0B1224; --primary:#3B82F6; --accent:#38BDF8;
+    --text:#F8FAFC; --muted:#94A3B8;
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{
+    background:#02040e; color:var(--text);
+    font-family:'Inter',system-ui,sans-serif;
+    overflow-x:hidden; margin:0;
+    /* Optimasi render HP */
+    -webkit-font-smoothing:antialiased;
+  }
+  h1,h2,h3,.font-display{font-family:'Space Grotesk',sans-serif;letter-spacing:-.02em}
+  .font-orbitron{font-family:'Orbitron',sans-serif;letter-spacing:.05em}
+
+  /* ============================================================
+     BACKGROUND — GRID KOTAK STATIS (NGGAK GERAK)
+     ============================================================ */
+  #bg-root{
+    position:fixed; inset:0; z-index:0; overflow:hidden; pointer-events:none;
+    background:
+      radial-gradient(ellipse at 20% 0%, rgba(29,78,216,.35), transparent 55%),
+      radial-gradient(ellipse at 80% 100%, rgba(14,165,233,.3), transparent 55%),
+      linear-gradient(180deg,#050816 0%,#02040e 100%);
+  }
+
+  /* Grid kotak-kotak DIAM (no animation, pakai CSS murni — ringan banget) */
+  #bg-root .grid-lines{
+    position:absolute; inset:0;
+    background-image:
+      linear-gradient(rgba(56,189,248,.13) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(56,189,248,.13) 1px, transparent 1px),
+      linear-gradient(rgba(56,189,248,.05) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(56,189,248,.05) 1px, transparent 1px);
+    background-size: 80px 80px, 80px 80px, 20px 20px, 20px 20px;
+    -webkit-mask-image: radial-gradient(ellipse at 50% 40%, #000 30%, transparent 85%);
+    mask-image: radial-gradient(ellipse at 50% 40%, #000 30%, transparent 85%);
+  }
+
+  /* Grid besar ungu — juga statis */
+  #bg-root .grid-lines-2{
+    position:absolute; inset:0;
+    background-image:
+      linear-gradient(rgba(99,102,241,.10) 2px, transparent 2px),
+      linear-gradient(90deg, rgba(99,102,241,.10) 2px, transparent 2px);
+    background-size: 200px 200px, 200px 200px;
+    -webkit-mask-image: radial-gradient(ellipse at 50% 50%, #000 20%, transparent 80%);
+    mask-image: radial-gradient(ellipse at 50% 50%, #000 20%, transparent 80%);
+  }
+
+  /* Glow orbs di background — pakai CSS animation ringan */
+  .bg-orb{
+    position:absolute; border-radius:50%;
+    filter: blur(80px);
+    will-change: transform, opacity;
+  }
+  .bg-orb.o1{ width:500px;height:500px;background:rgba(29,78,216,.4); top:-100px;left:-100px; animation:floatSlow 20s infinite ease-in-out; }
+  .bg-orb.o2{ width:450px;height:450px;background:rgba(14,165,233,.3); bottom:-100px;right:-100px; animation:floatSlow 24s infinite ease-in-out reverse; }
+  .bg-orb.o3{ width:350px;height:350px;background:rgba(99,102,241,.25); top:40%;left:50%; animation:floatSlow 28s infinite ease-in-out; }
+  @keyframes floatSlow{
+    0%,100%{ transform:translate(0,0) scale(1); }
+    50%    { transform:translate(30px,-30px) scale(1.1); }
+  }
+
+  /* Bintang statis */
+  .star{position:absolute;background:#fff;border-radius:50%;opacity:.7}
+  .star.big{box-shadow:0 0 6px rgba(255,255,255,.8),0 0 12px rgba(56,189,248,.5);opacity:.9}
+
+  /* Vignette */
+  .vignette{
+    position:absolute;inset:0;pointer-events:none;
+    background:radial-gradient(ellipse at center,transparent 40%,rgba(0,0,0,.65) 100%);
+  }
+
+  /* ============================================================
+     GLASS / COMPONENTS
+     ============================================================ */
+  .glass{
+    background:rgba(11,18,36,.62);
+    backdrop-filter:blur(10px); -webkit-backdrop-filter:blur(10px);
+    border:1px solid rgba(59,130,246,.28);
+    box-shadow:0 8px 30px rgba(0,0,0,.4);
+    position:relative;
+  }
+  .glass-hover{transition:transform .25s ease, border-color .25s ease, box-shadow .25s ease}
+  .glass-hover:hover{transform:translateY(-3px);border-color:rgba(56,189,248,.5);box-shadow:0 16px 40px rgba(56,189,248,.18)}
+
+  .glow-border{position:relative}
+  .glow-border::before{
+    content:"";position:absolute;inset:-1px;border-radius:inherit;padding:1px;
+    background:linear-gradient(135deg,rgba(56,189,248,.55),rgba(59,130,246,.15),transparent 60%);
+    -webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);
+    -webkit-mask-composite:xor;mask-composite:exclude;pointer-events:none;
+  }
+
+  .btn-primary{
+    background:linear-gradient(135deg,#3B82F6,#38BDF8);color:#04101f;font-weight:700;
+    transition:transform .25s ease, box-shadow .25s ease;
+    box-shadow:0 6px 24px rgba(56,189,248,.3);
+  }
+  .btn-primary:hover{transform:translateY(-2px);box-shadow:0 12px 40px rgba(56,189,248,.55)}
+  .btn-ghost{border:1px solid rgba(56,189,248,.4);color:#cfe4ff;transition:background .25s, border-color .25s, transform .25s;background:rgba(11,18,36,.3)}
+  .btn-ghost:hover{background:rgba(56,189,248,.12);border-color:#38BDF8;transform:translateY(-2px)}
+
+  .fade-in{opacity:0;transform:translateY(24px);transition:opacity .6s ease, transform .6s ease}
+  .fade-in.show{opacity:1;transform:translateY(0)}
+  .float{animation:float 6s ease-in-out infinite}
+  @keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-12px)}}
+  .orbit{animation:spin 30s linear infinite}
+  .orbit-rev{animation:spin 45s linear infinite reverse}
+  @keyframes spin{to{transform:rotate(360deg)}}
+  .badge-dot{width:8px;height:8px;background:#38BDF8;border-radius:50%;box-shadow:0 0 10px #38BDF8;display:inline-block;animation:pulse 2.5s infinite}
+  @keyframes pulse{0%,100%{opacity:1}50%{opacity:.5}}
+  .text-glow{text-shadow:0 0 20px rgba(56,189,248,.5), 0 0 40px rgba(56,189,248,.25)}
+
+  input, textarea, select{
+    background:rgba(5,8,22,.6);border:1px solid rgba(59,130,246,.3);color:var(--text);
+    transition:border-color .2s, box-shadow .2s;
+  }
+  input:focus, textarea:focus{outline:none;border-color:#38BDF8;box-shadow:0 0 0 4px rgba(56,189,248,.12);background:rgba(5,8,22,.85)}
+  input::placeholder{color:#475569}
+  input:-webkit-autofill, input:-webkit-autofill:focus{
+    -webkit-text-fill-color:#F8FAFC;
+    -webkit-box-shadow:0 0 0 1000px rgba(5,8,22,.9) inset;
+  }
+  input[type=file]::file-selector-button{
+    background:linear-gradient(135deg,#1e40af,#3B82F6);color:#fff;border:none;
+    padding:6px 12px;border-radius:8px;cursor:pointer;font-weight:600;font-size:12px;
+    margin-right:10px;transition:background .2s;
+  }
+  input[type=file]::file-selector-button:hover{background:linear-gradient(135deg,#3B82F6,#38BDF8)}
+
+  .req-card{transition:transform .3s ease, border-color .3s ease, box-shadow .3s ease; position:relative; overflow:hidden}
+  .req-card::after{
+    content:"";position:absolute;inset:0;opacity:0;transition:opacity .3s;
+    background:radial-gradient(circle at var(--x,50%) var(--y,50%),rgba(56,189,248,.18),transparent 60%);
+    pointer-events:none;
+  }
+  .req-card:hover::after{opacity:1}
+  .req-card:hover{transform:translateY(-8px);border-color:#38BDF8;box-shadow:0 18px 45px rgba(56,189,248,.28)}
+
+  .nav-link{position:relative;transition:color .2s}
+  .nav-link:hover{color:#38BDF8}
+  .nav-link::after{
+    content:"";position:absolute;left:0;bottom:-6px;width:0;height:2px;
+    background:linear-gradient(90deg,#3B82F6,#38BDF8);transition:width .3s;
+  }
+  .nav-link:hover::after{width:100%}
+  #mobileMenu{transition:max-height .35s ease;max-height:0;overflow:hidden}
+  #mobileMenu.open{max-height:400px}
+
+  .section-anchor{scroll-margin-top:90px}
+  .disabled-form{opacity:.5;pointer-events:none;filter:grayscale(.6)}
+
+  ::-webkit-scrollbar{width:8px}
+  ::-webkit-scrollbar-track{background:#050816}
+  ::-webkit-scrollbar-thumb{background:linear-gradient(#3B82F6,#38BDF8);border-radius:4px}
+
+  .dropzone{
+    border:2px dashed rgba(59,130,246,.35); border-radius:14px;
+    padding:20px 14px; text-align:center; cursor:pointer; transition:border-color .25s, background .25s, transform .25s;
+    background:rgba(5,8,22,.4); display:block;
+  }
+  .dropzone:hover,.dropzone.dragover{border-color:#38BDF8;background:rgba(56,189,248,.08);transform:scale(1.02)}
+  .dropzone.has-file{border-style:solid;border-color:#10b981;background:rgba(16,185,129,.08)}
+  .dropzone input{display:none}
+  .dropzone .preview{max-height:140px;border-radius:10px;margin-top:10px;width:100%;object-fit:cover}
+
+  #toast{
+    position:fixed;bottom:30px;left:50%;transform:translateX(-50%) translateY(120%);
+    z-index:100; transition:transform .35s ease; max-width:90vw;
+  }
+  #toast.show{transform:translateX(-50%) translateY(0)}
+
+  #progressBar{
+    position:fixed;top:0;left:0;height:3px;z-index:100;width:0;
+    background:linear-gradient(90deg,#3B82F6,#38BDF8,#60a5fa);
+    box-shadow:0 0 10px #38BDF8;transition:width .1s linear;
+  }
+
+  /* ============================================================
+     PENGURANGAN ANIMASI UNTUK HP KENTANG / USER PREFER REDUCED MOTION
+     ============================================================ */
+  @media (max-width: 640px){
+    /* Matikan animasi berat di HP */
+    .bg-orb{ animation: none !important; }
+    .float, .orbit, .orbit-rev{ animation: none !important; }
+    .glass, .glass-hover{ backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px); }
+  }
+  @media (prefers-reduced-motion: reduce){
+    *{ animation: none !important; transition: none !important; }
+  }
+</style>
+</head>
+<body class="relative">
+
+<div id="progressBar"></div>
+
+<!-- ==================== BACKGROUND ==================== -->
+<div id="bg-root">
+  <div class="bg-orb o1"></div>
+  <div class="bg-orb o2"></div>
+  <div class="bg-orb o3"></div>
+  <div class="grid-lines"></div>
+  <div class="grid-lines-2"></div>
+  <div id="starLayer"></div>
+  <div class="vignette"></div>
+</div>
+
+<!-- ==================== NAVBAR ==================== -->
+<nav class="fixed top-0 left-0 right-0 z-50 glass border-b border-blue-500/20">
+  <div class="max-w-7xl mx-auto px-5 h-16 flex items-center justify-between">
+    <a href="#home" class="text-lg font-extrabold tracking-wide font-display flex items-center gap-2">
+      <span class="text-sky-400 text-xl">✦</span>
+      <span>Nary<span class="text-sky-400">Giveaway</span></span>
+    </a>
+    <div class="hidden md:flex items-center gap-8 text-sm text-slate-300">
+      <a class="nav-link" href="#home">Home</a>
+      <a class="nav-link" href="#giveaway">Giveaway</a>
+      <a class="nav-link" href="#persyaratan">Persyaratan</a>
+      <a class="nav-link" href="#pendaftaran">Pendaftaran</a>
+    </div>
+    <a href="#pendaftaran" class="hidden md:inline-block btn-primary px-5 py-2 rounded-lg text-xs">Daftar Sekarang</a>
+    <button id="hamburger" class="md:hidden text-slate-200 text-2xl" aria-label="Menu">☰</button>
+  </div>
+  <div id="mobileMenu" class="md:hidden px-5 flex flex-col gap-1 text-slate-200 bg-[#050816]/95 border-t border-blue-500/10">
+    <a href="#home" class="mobile-link py-3 border-b border-blue-500/5">Home</a>
+    <a href="#giveaway" class="mobile-link py-3 border-b border-blue-500/5">Giveaway</a>
+    <a href="#persyaratan" class="mobile-link py-3 border-b border-blue-500/5">Persyaratan</a>
+    <a href="#pendaftaran" class="mobile-link py-3">Pendaftaran</a>
+  </div>
+</nav>
+
+<!-- ==================== HERO ==================== -->
+<section id="home" class="section-anchor relative z-10 min-h-screen flex items-center pt-24 pb-16">
+  <div class="max-w-7xl mx-auto px-5 grid md:grid-cols-2 gap-14 items-center w-full relative">
+    <div class="fade-in">
+      <div class="inline-flex items-center gap-2 glass rounded-full px-4 py-2 text-[11px] tracking-[0.2em] text-sky-300 mb-6 glow-border">
+        <span class="badge-dot"></span> SPECIAL GIVEAWAY EVENT · 2026
+      </div>
+      <h1 class="text-5xl sm:text-6xl lg:text-7xl font-black leading-[1.05] font-orbitron">
+        <span class="bg-gradient-to-r from-sky-300 via-blue-400 to-sky-500 bg-clip-text text-transparent text-glow">NARY</span><span class="text-white">GIVEAWAY</span>
+      </h1>
+      <p class="mt-5 text-xl sm:text-2xl text-slate-200 font-medium">
+        Your Chance to Win <span class="text-sky-300">Gamepass DDS</span>.
+      </p>
+      <p class="mt-5 text-slate-400 leading-relaxed max-w-lg">
+        Selamat datang di <span class="text-sky-300 font-medium">NaryGiveaway</span>! Ikuti persyaratannya, daftarkan dirimu, dan dapatkan kesempatan memenangkan <span class="text-sky-300 font-medium">Gamepass Drag Drive Simulator (DDS)</span>.
+      </p>
+      <div class="mt-9 flex flex-wrap gap-4">
+        <a href="#pendaftaran" class="btn-primary px-7 py-3.5 rounded-xl text-sm">🚀 Ikuti Giveaway</a>
+        <a href="#persyaratan" class="btn-ghost px-7 py-3.5 rounded-xl text-sm">📋 Lihat Persyaratan</a>
+      </div>
+      <div class="mt-10 flex gap-8 text-sm">
+        <div>
+          <div class="text-2xl font-bold text-sky-300 font-display">3</div>
+          <div class="text-xs text-slate-500 mt-1">Persyaratan</div>
+        </div>
+        <div>
+          <div class="text-2xl font-bold text-sky-300 font-display">2</div>
+          <div class="text-xs text-slate-500 mt-1">Pemenang</div>
+        </div>
+        <div>
+          <div class="text-2xl font-bold text-sky-300 font-display">DDS</div>
+          <div class="text-xs text-slate-500 mt-1">Gamepass</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="fade-in flex justify-center">
+      <div class="relative w-80 h-80 sm:w-96 sm:h-96">
+        <div class="absolute inset-0 rounded-full border border-sky-500/25 orbit"></div>
+        <div class="absolute inset-8 rounded-full border border-blue-400/15 orbit-rev"></div>
+        <div class="absolute inset-16 rounded-full border border-sky-300/10 orbit" style="animation-duration:55s"></div>
+        <div class="absolute inset-16 rounded-full float"
+          style="background:radial-gradient(circle at 32% 30%, #93c5fd, #3B82F6 40%, #1e3a8a 70%, #0B1224 100%);
+                 box-shadow:0 0 100px rgba(56,189,248,.5), inset -25px -25px 60px rgba(0,0,0,.6);"></div>
+        <div class="absolute w-8 h-8 rounded-full top-6 right-12 float"
+          style="background:radial-gradient(circle at 35% 35%, #bae6fd, #38bdf8);box-shadow:0 0 30px #38bdf8;"></div>
+        <div class="absolute w-3 h-3 rounded-full bottom-16 left-8"
+          style="background:radial-gradient(circle at 35% 35%, #e0e7ff, #6366f1);box-shadow:0 0 20px #6366f1;"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="absolute bottom-8 left-1/2 -translate-x-1/2 hidden md:block">
+    <div class="w-6 h-10 border border-sky-400/40 rounded-full flex justify-center pt-2">
+      <div class="w-1 h-2 bg-sky-400 rounded-full animate-bounce"></div>
+    </div>
+  </div>
+</section>
+
+<!-- ==================== PERIODE GIVEAWAY ==================== -->
+<section id="giveaway" class="section-anchor relative z-10 py-24">
+  <div class="max-w-7xl mx-auto px-5">
+    <div class="text-center mb-14 fade-in">
+      <p class="text-xs tracking-[0.35em] text-sky-400 mb-3 font-orbitron">EVENT PERIOD</p>
+      <h2 class="text-3xl sm:text-4xl lg:text-5xl font-bold">Informasi Periode Giveaway</h2>
+      <p class="text-slate-400 mt-4 max-w-xl mx-auto">Semua waktu mengikuti zona <span class="text-sky-300">Asia/Jakarta (WIB)</span>.</p>
+    </div>
+
+    <div class="grid lg:grid-cols-2 gap-6 fade-in">
+      <div class="glass glow-border rounded-2xl p-8 glass-hover">
+        <div class="flex items-center gap-3 mb-6">
+          <div class="w-12 h-12 rounded-xl bg-sky-500/15 border border-sky-400/30 grid place-items-center text-xl">🎁</div>
+          <div>
+            <h3 class="text-lg font-semibold font-display">NaryGiveaway Gamepass Giveaway</h3>
+            <p class="text-xs text-slate-500">Drag Drive Simulator Edition</p>
+          </div>
+        </div>
+        <div class="space-y-4 text-sm">
+          <div class="flex justify-between items-center border-b border-white/5 pb-3">
+            <span class="text-slate-400 flex items-center gap-2">🏆 Hadiah</span>
+            <span class="text-sky-300 font-semibold">Gamepass DDS</span>
+          </div>
+          <div class="flex justify-between items-center border-b border-white/5 pb-3">
+            <span class="text-slate-400 flex items-center gap-2">🟢 Dibuka</span>
+            <span class="text-slate-200">12 Oktober 2026 · 00:00 WIB</span>
+          </div>
+          <div class="flex justify-between items-center border-b border-white/5 pb-3">
+            <span class="text-slate-400 flex items-center gap-2">🔴 Ditutup</span>
+            <span class="text-sky-300">20 Oktober 2026 · 23:59 WIB</span>
+          </div>
+          <div class="flex justify-between items-center">
+            <span class="text-slate-400 flex items-center gap-2">📅 Durasi</span>
+            <span class="text-slate-200">8 Hari</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="glass glow-border rounded-2xl p-8 text-center glass-hover">
+        <p class="text-xs tracking-[0.35em] text-sky-400 mb-6 font-orbitron">CLOSING IN</p>
+        <div class="grid grid-cols-4 gap-3 mb-6">
+          <div class="glass rounded-xl py-5">
+            <div id="cd-days" class="text-3xl sm:text-4xl font-bold text-sky-300 font-display">00</div>
+            <div class="text-[10px] tracking-widest text-slate-500 mt-1">HARI</div>
+          </div>
+          <div class="glass rounded-xl py-5">
+            <div id="cd-hours" class="text-3xl sm:text-4xl font-bold text-sky-300 font-display">00</div>
+            <div class="text-[10px] tracking-widest text-slate-500 mt-1">JAM</div>
+          </div>
+          <div class="glass rounded-xl py-5">
+            <div id="cd-mins" class="text-3xl sm:text-4xl font-bold text-sky-300 font-display">00</div>
+            <div class="text-[10px] tracking-widest text-slate-500 mt-1">MENIT</div>
+          </div>
+          <div class="glass rounded-xl py-5">
+            <div id="cd-secs" class="text-3xl sm:text-4xl font-bold text-sky-300 font-display">00</div>
+            <div class="text-[10px] tracking-widest text-slate-500 mt-1">DETIK</div>
+          </div>
+        </div>
+        <p id="countdownStatus" class="text-xs text-slate-400">⏳ Menuju penutupan pendaftaran.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ==================== PERSYARATAN ==================== -->
+<section id="persyaratan" class="section-anchor relative z-10 py-24">
+  <div class="max-w-7xl mx-auto px-5">
+    <div class="text-center mb-14 fade-in">
+      <p class="text-xs tracking-[0.35em] text-sky-400 mb-3 font-orbitron">REQUIREMENTS</p>
+      <h2 class="text-3xl sm:text-4xl lg:text-5xl font-bold">Persyaratan untuk Mengikuti Giveaway</h2>
+      <p class="text-slate-400 mt-4 max-w-xl mx-auto">Selesaikan ketiga langkah berikut, lalu unggah buktinya pada formulir pendaftaran.</p>
+    </div>
+
+    <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+      <a href="https://whatsapp.com/channel/0029VbDYVzfEKyZK350kaq3j" target="_blank" rel="noopener noreferrer"
+         class="req-card glass glow-border rounded-2xl p-7 block fade-in">
+        <div class="flex justify-between items-start mb-5">
+          <div class="w-14 h-14 rounded-xl bg-gradient-to-br from-sky-500/20 to-blue-600/10 border border-sky-400/30 grid place-items-center text-2xl">📺</div>
+          <div class="text-xs px-2 py-1 rounded-full bg-sky-500/10 border border-sky-400/30 text-sky-300 font-orbitron">STEP 1</div>
+        </div>
+        <h3 class="text-lg font-semibold flex items-center gap-2 font-display">Subscribe Saluran 1
+          <span class="text-sky-400 text-sm">↗</span>
+        </h3>
+        <p class="text-sm text-slate-400 mt-3 leading-relaxed">Kunjungi dan subscribe saluran YouTube penyelenggara.</p>
+        <div class="mt-5 text-xs text-sky-400 font-medium">Buka Saluran →</div>
+      </a>
+
+      <a href="https://whatsapp.com/channel/0029VbDd4Sm0rGiLdXW6rB0j" target="_blank" rel="noopener noreferrer"
+         class="req-card glass glow-border rounded-2xl p-7 block fade-in">
+        <div class="flex justify-between items-start mb-5">
+          <div class="w-14 h-14 rounded-xl bg-gradient-to-br from-sky-500/20 to-blue-600/10 border border-sky-400/30 grid place-items-center text-2xl">📡</div>
+          <div class="text-xs px-2 py-1 rounded-full bg-sky-500/10 border border-sky-400/30 text-sky-300 font-orbitron">STEP 2</div>
+        </div>
+        <h3 class="text-lg font-semibold flex items-center gap-2 font-display">Subscribe Saluran 2
+          <span class="text-sky-400 text-sm">↗</span>
+        </h3>
+        <p class="text-sm text-slate-400 mt-3 leading-relaxed">Kunjungi dan subscribe saluran kedua penyelenggara.</p>
+        <div class="mt-5 text-xs text-sky-400 font-medium">Buka Saluran →</div>
+      </a>
+
+      <a href="https://www.tiktok.com/@aikoooroblox2" target="_blank" rel="noopener noreferrer"
+         class="req-card glass glow-border rounded-2xl p-7 block fade-in">
+        <div class="flex justify-between items-start mb-5">
+          <div class="w-14 h-14 rounded-xl bg-gradient-to-br from-sky-500/20 to-blue-600/10 border border-sky-400/30 grid place-items-center text-2xl">🎵</div>
+          <div class="text-xs px-2 py-1 rounded-full bg-sky-500/10 border border-sky-400/30 text-sky-300 font-orbitron">STEP 3</div>
+        </div>
+        <h3 class="text-lg font-semibold flex items-center gap-2 font-display">Follow TikTok
+          <span class="text-sky-400 text-sm">↗</span>
+        </h3>
+        <p class="text-sm text-slate-400 mt-3 leading-relaxed">Follow akun TikTok resmi: <span class="text-sky-300">@aikoooroblox2</span>.</p>
+        <div class="mt-5 text-xs text-sky-400 font-medium">Buka TikTok →</div>
+      </a>
+    </div>
+
+    <div class="mt-10 glass glow-border rounded-2xl p-6 flex gap-4 items-start fade-in">
+      <div class="text-2xl">💡</div>
+      <div>
+        <div class="font-semibold text-sm mb-1">Tips</div>
+        <p class="text-sm text-slate-400 leading-relaxed">Pastikan kamu sudah menyelesaikan ketiga langkah di atas <span class="text-sky-300">sebelum</span> mengisi formulir pendaftaran. Screenshot bukti harus jelas dan menunjukkan username kamu.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ==================== FORM PENDAFTARAN ==================== -->
+<section id="pendaftaran" class="section-anchor relative z-10 py-24">
+  <div class="max-w-3xl mx-auto px-5">
+    <div class="text-center mb-12 fade-in">
+      <p class="text-xs tracking-[0.35em] text-sky-400 mb-3 font-orbitron">REGISTRATION</p>
+      <h2 class="text-3xl sm:text-4xl lg:text-5xl font-bold">Join the Giveaway</h2>
+      <p class="text-slate-400 mt-4 max-w-xl mx-auto">Lengkapi informasi berikut dan unggah bukti follow untuk mengikuti NaryGiveaway.</p>
+    </div>
+
+    <form id="regForm" class="glass glow-border rounded-2xl p-7 sm:p-10 space-y-7 fade-in" novalidate>
+
+      <div class="flex items-center gap-2 text-xs text-slate-500 mb-2">
+        <div class="flex items-center gap-2">
+          <div class="w-6 h-6 rounded-full bg-sky-500/20 border border-sky-400/40 grid place-items-center text-sky-300 font-bold">1</div>
+          <span>Data Diri</span>
+        </div>
+        <div class="flex-1 h-px bg-blue-500/20"></div>
+        <div class="flex items-center gap-2">
+          <div class="w-6 h-6 rounded-full bg-sky-500/20 border border-sky-400/40 grid place-items-center text-sky-300 font-bold">2</div>
+          <span>Bukti</span>
+        </div>
+      </div>
+
+      <div>
+        <div class="text-xs tracking-widest text-sky-400 mb-4 font-semibold font-orbitron">IDENTITAS PESERTA</div>
+        <div class="space-y-5">
+          <div>
+            <label class="block text-sm text-slate-300 mb-2 font-medium">Nama <span class="text-sky-400">*</span></label>
+            <input type="text" name="nama" placeholder="Masukkan nama lengkap kamu" required maxlength="100" class="w-full rounded-xl px-4 py-3.5 text-sm" />
+          </div>
+          <div>
+            <label class="block text-sm text-slate-300 mb-2 font-medium">Nomor WhatsApp <span class="text-sky-400">*</span></label>
+            <input type="tel" name="whatsapp" placeholder="08xxxxxxxxxx" required pattern="^(\+?62|0)8[0-9]{7,13}$" class="w-full rounded-xl px-4 py-3.5 text-sm" />
+            <p class="text-xs text-slate-500 mt-1.5">Format: 08xxxxxxxxxx (tanpa spasi, tanpa tanda hubung).</p>
+          </div>
+          <div>
+            <label class="block text-sm text-slate-300 mb-2 font-medium">Username Roblox <span class="text-sky-400">*</span></label>
+            <input type="text" name="roblox" placeholder="Masukkan username Roblox kamu" required maxlength="30" class="w-full rounded-xl px-4 py-3.5 text-sm" />
+            <p class="text-xs text-slate-500 mt-1.5">🔒 Kami tidak akan pernah meminta password, cookie, atau kode verifikasi Roblox.</p>
+          </div>
+        </div>
+      </div>
+
+      <div>
+        <div class="text-xs tracking-widest text-sky-400 mb-4 font-semibold font-orbitron">UPLOAD BUKTI (JPG/PNG · MAKS 5MB)</div>
+        <div class="grid sm:grid-cols-3 gap-5">
+          <div>
+            <label class="block text-sm text-slate-300 mb-2 font-medium">Bukti Saluran 1 <span class="text-sky-400">*</span></label>
+            <label class="dropzone" data-name="bukti1">
+              <input type="file" name="bukti1" accept="image/png,image/jpeg,image/jpg" required />
+              <div class="text-3xl mb-2">📤</div>
+              <div class="text-xs text-slate-400">Klik atau drag</div>
+              <img class="preview hidden" />
+              <div class="filename text-xs text-emerald-400 mt-2 hidden"></div>
+            </label>
+          </div>
+          <div>
+            <label class="block text-sm text-slate-300 mb-2 font-medium">Bukti Saluran 2 <span class="text-sky-400">*</span></label>
+            <label class="dropzone" data-name="bukti2">
+              <input type="file" name="bukti2" accept="image/png,image/jpeg,image/jpg" required />
+              <div class="text-3xl mb-2">📤</div>
+              <div class="text-xs text-slate-400">Klik atau drag</div>
+              <img class="preview hidden" />
+              <div class="filename text-xs text-emerald-400 mt-2 hidden"></div>
+            </label>
+          </div>
+          <div>
+            <label class="block text-sm text-slate-300 mb-2 font-medium">Bukti TikTok <span class="text-sky-400">*</span></label>
+            <label class="dropzone" data-name="bukti3">
+              <input type="file" name="bukti3" accept="image/png,image/jpeg,image/jpg" required />
+              <div class="text-3xl mb-2">📤</div>
+              <div class="text-xs text-slate-400">Klik atau drag</div>
+              <img class="preview hidden" />
+              <div class="filename text-xs text-emerald-400 mt-2 hidden"></div>
+            </label>
+          </div>
+        </div>
+      </div>
+
+      <div class="glass rounded-xl p-4 flex gap-3 items-start border border-blue-500/20">
+        <div class="text-xl">🔒</div>
+        <p class="text-xs text-slate-400 leading-relaxed">
+          Data yang kamu kirimkan (nama, WhatsApp, username Roblox, dan bukti screenshot) hanya digunakan untuk administrasi dan verifikasi peserta NaryGiveaway.
+        </p>
+      </div>
+
+      <div id="formMsg" class="hidden text-sm rounded-xl px-4 py-3"></div>
+
+      <button type="submit" id="submitBtn" class="btn-primary w-full rounded-xl py-4 flex items-center justify-center gap-2 text-sm">
+        <span id="btnText">Submit Registration →</span>
+        <span id="btnSpin" class="hidden w-4 h-4 border-2 border-[#04101f] border-t-transparent rounded-full animate-spin"></span>
+      </button>
+      <p id="closedNote" class="hidden text-center text-sm text-red-400 font-medium">🔒 Pendaftaran Ditutup</p>
+    </form>
+  </div>
+</section>
+
+<!-- ==================== FOOTER ==================== -->
+<footer class="relative z-10 border-t border-blue-500/15 mt-16">
+  <div class="max-w-7xl mx-auto px-5 py-14 grid sm:grid-cols-3 gap-10">
+    <div>
+      <div class="text-xl font-bold font-display flex items-center gap-2">
+        <span class="text-sky-400">✦</span> Nary<span class="text-sky-400">Giveaway</span>
+      </div>
+      <p class="text-sm text-slate-400 mt-3">Made with 💙 for the DDS Community</p>
+      <p class="text-xs text-slate-500 mt-2">Drag Drive Simulator · 2026</p>
+    </div>
+    <div>
+      <div class="text-sm font-semibold text-slate-200 mb-4 font-display">Navigasi</div>
+      <div class="flex flex-col gap-2.5 text-sm text-slate-400">
+        <a href="#home" class="hover:text-sky-400 transition">Home</a>
+        <a href="#giveaway" class="hover:text-sky-400 transition">Giveaway</a>
+        <a href="#persyaratan" class="hover:text-sky-400 transition">Persyaratan</a>
+        <a href="#pendaftaran" class="hover:text-sky-400 transition">Pendaftaran</a>
+      </div>
+    </div>
+    <div>
+      <div class="text-sm font-semibold text-slate-200 mb-4 font-display">Sosial</div>
+      <a href="https://www.tiktok.com/@aikoooroblox2" target="_blank" rel="noopener noreferrer"
+         class="text-sm text-slate-400 hover:text-sky-400 transition inline-flex items-center gap-2">
+        🎵 TikTok — @aikoooroblox2 <span>↗</span>
+      </a>
+    </div>
+  </div>
+  <div class="border-t border-blue-500/10 py-6 text-center text-xs text-slate-500">
+    © 2026 NaryGiveaway. All rights reserved. · Made with 💙
+  </div>
+</footer>
+
+<div id="toast" class="glass glow-border rounded-xl px-5 py-4 text-sm"></div>
+
+<script>
+/* ============================================================
+   KONFIGURASI
+   ============================================================ */
+const CONFIG = {
+  OPEN_DATE:  new Date("2026-10-12T00:00:00+07:00"),
+  CLOSE_DATE: new Date("2026-10-20T23:59:59+07:00"),
+  WEBHOOK_URL: "https://discord.com/api/webhooks/1559205517702864996/tVE-X4bDVpaInxog27jAEWLGTTSp4i4IMCb5o-_pnm7ircwzQHYL9ghKVACReDSOBE3R",
+  MAX_FILE_MB: 5
+};
+
+/* ============================================================
+   BINTANG STATIS (NGGAK ANIMASI, RINGAN)
+   ============================================================ */
+(function generateStars(){
+  const starLayer = document.getElementById("starLayer");
+  const isMobile = window.innerWidth < 768;
+  const count = isMobile ? 40 : 100; // dikurangi biar ringan
+  let html = "";
+  const frag = document.createDocumentFragment();
+  for (let i = 0; i < count; i++) {
+    const size = Math.random() * 2 + 0.5;
+    const x = Math.random() * 100;
+    const y = Math.random() * 100;
+    const isBig = Math.random() > 0.9;
+    const opacity = isBig ? 0.9 : (0.4 + Math.random() * 0.4);
+    html += `<div class="star${isBig?" big":""}" style="width:${size}px;height:${size}px;left:${x}%;top:${y}%;opacity:${opacity}"></div>`;
+  }
+  starLayer.innerHTML = html;
+})();
+
+/* ============================================================
+   SCROLL PROGRESS BAR (dengan rAF throttle biar ringan)
+   ============================================================ */
+const progressBar = document.getElementById("progressBar");
+let scrollTicking = false;
+window.addEventListener("scroll", () => {
+  if (scrollTicking) return;
+  scrollTicking = true;
+  requestAnimationFrame(() => {
+    const h = document.documentElement;
+    const scrolled = (h.scrollTop / (h.scrollHeight - h.clientHeight)) * 100;
+    progressBar.style.width = scrolled + "%";
+    scrollTicking = false;
+  });
+}, { passive: true });
+
+/* ============================================================
+   NAVBAR MOBILE
+   ============================================================ */
+const hamburger = document.getElementById("hamburger");
+const mobileMenu = document.getElementById("mobileMenu");
+hamburger.addEventListener("click", () => {
+  mobileMenu.classList.toggle("open");
+  hamburger.textContent = mobileMenu.classList.contains("open") ? "✕" : "☰";
+});
+document.querySelectorAll(".mobile-link").forEach(a =>
+  a.addEventListener("click", () => {
+    mobileMenu.classList.remove("open");
+    hamburger.textContent = "☰";
+  })
+);
+
+/* ============================================================
+   FADE-IN ON SCROLL
+   ============================================================ */
+const io = new IntersectionObserver(entries => {
+  entries.forEach((e, i) => {
+    if (e.isIntersecting) {
+      setTimeout(() => e.target.classList.add("show"), i * 60);
+      io.unobserve(e.target);
+    }
+  });
+}, { threshold: 0.12 });
+document.querySelectorAll(".fade-in").forEach(el => io.observe(el));
+
+/* ============================================================
+   REQ CARD MOUSE GLOW (desktop only, biar HP ringan)
+   ============================================================ */
+if (window.matchMedia("(min-width: 768px)").matches) {
+  document.querySelectorAll(".req-card").forEach(card => {
+    card.addEventListener("mousemove", e => {
+      const r = card.getBoundingClientRect();
+      card.style.setProperty("--x", (e.clientX - r.left) + "px");
+      card.style.setProperty("--y", (e.clientY - r.top) + "px");
+    });
+  });
+}
+
+/* ============================================================
+   COUNTDOWN
+   ============================================================ */
+const cd = {
+  d: document.getElementById("cd-days"),
+  h: document.getElementById("cd-hours"),
+  m: document.getElementById("cd-mins"),
+  s: document.getElementById("cd-secs"),
+  status: document.getElementById("countdownStatus")
+};
+const pad = n => String(n).padStart(2, "0");
+
+function tick(){
+  const diff = CONFIG.CLOSE_DATE.getTime() - Date.now();
+  if (diff <= 0) {
+    cd.d.textContent = cd.h.textContent = cd.m.textContent = cd.s.textContent = "00";
+    cd.status.textContent = "🔒 Pendaftaran telah ditutup.";
+    cd.status.classList.add("text-red-400");
+    lockForm();
+    return;
+  }
+  const sec = Math.floor(diff / 1000);
+  cd.d.textContent = pad(Math.floor(sec / 86400));
+  cd.h.textContent = pad(Math.floor((sec % 86400) / 3600));
+  cd.m.textContent = pad(Math.floor((sec % 3600) / 60));
+  cd.s.textContent = pad(sec % 60);
+}
+
+function lockForm(){
+  const form = document.getElementById("regForm");
+  form.classList.add("disabled-form");
+  document.getElementById("submitBtn").disabled = true;
+  document.getElementById("btnText").textContent = "Pendaftaran Ditutup";
+  document.getElementById("closedNote").classList.remove("hidden");
+}
+
+/* ============================================================
+   TOAST & MESSAGE
+   ============================================================ */
+function showToast(text, type = "info"){
+  const t = document.getElementById("toast");
+  t.textContent = text;
+  t.className = "glass glow-border rounded-xl px-5 py-4 text-sm " + (
+    type === "error"   ? "text-red-300 border-red-500/40" :
+    type === "success" ? "text-emerald-300 border-emerald-500/40" :
+                         "text-sky-300"
+  );
+  t.classList.add("show");
+  clearTimeout(t._tid);
+  t._tid = setTimeout(() => t.classList.remove("show"), 4000);
+}
+
+function showMsg(text, type = "info"){
+  const box = document.getElementById("formMsg");
+  box.textContent = text;
+  box.className = "text-sm rounded-xl px-4 py-3 " + (
+    type === "error"   ? "bg-red-500/10 text-red-300 border border-red-500/30" :
+    type === "success" ? "bg-emerald-500/10 text-emerald-300 border border-emerald-500/30" :
+                         "bg-sky-500/10 text-sky-300 border border-sky-500/30"
+  );
+  box.classList.remove("hidden");
+  box.scrollIntoView({ behavior: "smooth", block: "center" });
+}
+
+/* ============================================================
+   DRAG & DROP UPLOAD
+   ============================================================ */
+document.querySelectorAll(".dropzone").forEach(zone => {
+  const input = zone.querySelector('input[type="file"]');
+  const preview = zone.querySelector(".preview");
+  const fname = zone.querySelector(".filename");
+
+  const handleFile = (file) => {
+    if (!file) return;
+    if (!["image/jpeg","image/jpg","image/png"].includes(file.type)) {
+      showMsg("Format file harus JPG, JPEG, atau PNG.", "error");
+      input.value = ""; return;
+    }
+    if (file.size > CONFIG.MAX_FILE_MB * 1024 * 1024) {
+      showMsg("Ukuran file " + file.name + " melebihi " + CONFIG.MAX_FILE_MB + "MB.", "error");
+      input.value = ""; return;
+    }
+    const reader = new FileReader();
+    reader.onload = e => {
+      preview.src = e.target.result;
+      preview.classList.remove("hidden");
+      fname.textContent = "✓ " + file.name;
+      fname.classList.remove("hidden");
+      zone.classList.add("has-file");
+    };
+    reader.readAsDataURL(file);
+  };
+
+  input.addEventListener("change", () => handleFile(input.files[0]));
+  zone.addEventListener("dragover", e => { e.preventDefault(); zone.classList.add("dragover"); });
+  zone.addEventListener("dragleave", () => zone.classList.remove("dragover"));
+  zone.addEventListener("drop", e => {
+    e.preventDefault();
+    zone.classList.remove("dragover");
+    const file = e.dataTransfer.files[0];
+    if (file) {
+      const dt = new DataTransfer();
+      dt.items.add(file);
+      input.files = dt.files;
+      handleFile(file);
+    }
+  });
+});
+
+/* ============================================================
+   WAKTU WIB
+   ============================================================ */
+function getWIBParts(){
+  const now = new Date();
+  const fmt = new Intl.DateTimeFormat("id-ID", {
+    timeZone: "Asia/Jakarta",
+    day: "2-digit", month: "long", year: "numeric",
+    hour: "2-digit", minute: "2-digit", second: "2-digit", hour12: false
+  });
+  const dateFmt = new Intl.DateTimeFormat("id-ID", {
+    timeZone: "Asia/Jakarta",
+    weekday: "long", day: "2-digit", month: "long", year: "numeric"
+  });
+  return {
+    full: fmt.format(now).replace(/\./g, ":") + " WIB",
+    date: dateFmt.format(now),
+    iso: now.toISOString()
+  };
+}
+
+/* ============================================================
+   SUBMIT FORM → DISCORD
+   ============================================================ */
+const form = document.getElementById("regForm");
+form.addEventListener("submit", async (e) => {
+  e.preventDefault();
+
+  if (Date.now() > CONFIG.CLOSE_DATE.getTime()) {
+    showMsg("Pendaftaran sudah ditutup. Terima kasih atas minatmu!", "error");
+    lockForm();
+    return;
+  }
+
+  const btn = document.getElementById("submitBtn");
+  const btnText = document.getElementById("btnText");
+  const btnSpin = document.getElementById("btnSpin");
+
+  const nama = form.nama.value.trim();
+  const wa = form.whatsapp.value.trim();
+  const roblox = form.roblox.value.trim();
+  const f1 = form.bukti1.files[0];
+  const f2 = form.bukti2.files[0];
+  const f3 = form.bukti3.files[0];
+
+  if (!nama || !wa || !roblox || !f1 || !f2 || !f3) {
+    showMsg("⚠️ Mohon lengkapi semua field dan unggah ketiga bukti.", "error");
+    return;
+  }
+  if (nama.length < 2) { showMsg("Nama minimal 2 karakter.", "error"); return; }
+  if (!/^(\+?62|0)8[0-9]{7,13}$/.test(wa.replace(/[\s-]/g, ""))) {
+    showMsg("Format nomor WhatsApp tidak valid. Contoh: 08123456789", "error"); return;
+  }
+  if (roblox.length < 3) { showMsg("Username Roblox minimal 3 karakter.", "error"); return; }
+  if (!/^[a-zA-Z0-9_]+$/.test(roblox)) {
+    showMsg("Username Roblox hanya boleh huruf, angka, dan underscore (_).", "error"); return;
+  }
+  const allowed = ["image/jpeg", "image/jpg", "image/png"];
+  for (const f of [f1, f2, f3]) {
+    if (!allowed.includes(f.type)) { showMsg("Format file harus JPG, JPEG, atau PNG.", "error"); return; }
+    if (f.size > CONFIG.MAX_FILE_MB * 1024 * 1024) {
+      showMsg("Ukuran file maksimal " + CONFIG.MAX_FILE_MB + "MB.", "error"); return;
+    }
+  }
+
+  btn.disabled = true;
+  btnText.textContent = "Mengirim ke server...";
+  btnSpin.classList.remove("hidden");
+
+  try {
+    const id = "NG-" + Date.now().toString(36).toUpperCase() + "-" + Math.random().toString(36).slice(2, 6).toUpperCase();
+    const wib = getWIBParts();
+
+    const embed = {
+      title: "🚀 PENDAFTARAN BARU — NARYGIVEAWAY",
+      description: "Peserta baru telah mendaftar. Berikut detail lengkapnya:",
+      color: 0x3B82F6,
+      fields: [
+        { name: "🆔 ID Pendaftaran", value: "`" + id + "`", inline: false },
+        { name: "👤 Nama Peserta", value: nama, inline: true },
+        { name: "🎮 Username Roblox", value: "`" + roblox + "`", inline: true },
+        { name: "📱 Nomor WhatsApp", value: "`" + wa + "`", inline: false },
+        { name: "🕐 Waktu Pendaftaran", value: wib.full, inline: false },
+        { name: "📅 Tanggal (WIB)", value: wib.date, inline: true },
+        { name: "📊 Status", value: "⏳ Menunggu Verifikasi", inline: true },
+        { name: "🎁 Event", value: "Giveaway Gamepass DDS", inline: false }
+      ],
+      footer: { text: "NaryGiveaway Registration System · Auto-generated" },
+      timestamp: wib.iso
+    };
+
+    const payload = {
+      username: "NaryGiveaway Bot",
+      embeds: [embed]
+    };
+
+    const fd = new FormData();
+    fd.append("payload_json", JSON.stringify(payload));
+    fd.append("files[0]", f1, "1_bukti_saluran1_" + id + ".png");
+    fd.append("files[1]", f2, "2_bukti_saluran2_" + id + ".png");
+    fd.append("files[2]", f3, "3_bukti_tiktok_" + id + ".png");
+
+    let success = false, lastErr = null;
+    for (let attempt = 1; attempt <= 3; attempt++) {
+      try {
+        const res = await fetch(CONFIG.WEBHOOK_URL, { method: "POST", body: fd });
+        if (res.ok) { success = true; break; }
+        lastErr = new Error("HTTP " + res.status);
+      } catch (err) { lastErr = err; }
+      if (attempt < 3) {
+        btnText.textContent = "Retry " + attempt + "/3...";
+        await new Promise(r => setTimeout(r, 800 * attempt));
+      }
+    }
+
+    if (!success) throw lastErr || new Error("Gagal mengirim ke Discord.");
+
+    showMsg("✅ Pendaftaran berhasil! Terima kasih telah mengikuti NaryGiveaway. Semoga beruntung! (ID: " + id + ")", "success");
+    showToast("✅ Berhasil terdaftar! ID: " + id, "success");
+
+    form.reset();
+    document.querySelectorAll(".dropzone").forEach(z => {
+      z.classList.remove("has-file");
+      z.querySelector(".preview").classList.add("hidden");
+      z.querySelector(".filename").classList.add("hidden");
+    });
+
+  } catch (err) {
+    console.error(err);
+    showMsg("❌ Gagal mengirim pendaftaran: " + err.message + ". Silakan coba lagi.", "error");
+    showToast("❌ Gagal mengirim. Coba lagi.", "error");
+  } finally {
+    btn.disabled = false;
+    btnText.textContent = "Submit Registration →";
+    btnSpin.classList.add("hidden");
+  }
+});
+
+/* ============================================================
+   INIT
+   ============================================================ */
+tick();
+setInterval(tick, 1000);
+if (Date.now() < CONFIG.OPEN_DATE.getTime()) {
+  showMsg("📅 Pendaftaran belum dibuka. Silakan kembali pada 12 Oktober 2026 pukul 00:00 WIB.", "info");
+}
+</script>
+</body>
+</html>
